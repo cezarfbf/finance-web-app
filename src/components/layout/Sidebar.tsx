@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   PieChart,
@@ -6,8 +6,10 @@ import {
   Briefcase,
   Settings,
   Search,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logout } from "@/lib/api/auth";
 
 interface NavItem {
   to: string;
@@ -34,8 +36,29 @@ export function Sidebar() {
           <SidebarIconLink key={item.to} {...item} />
         ))}
       </div>
-      <SidebarIconLink to="/settings" label="Settings" icon={Settings} disabled />
+      <div className="flex flex-col items-center gap-2">
+        <SidebarIconLink to="/settings" label="Settings" icon={Settings} disabled />
+        <LogoutButton />
+      </div>
     </aside>
+  );
+}
+
+function LogoutButton() {
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+  return (
+    <button
+      type="button"
+      title="Sign out"
+      onClick={handleLogout}
+      className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
+    >
+      <LogOut size={18} />
+    </button>
   );
 }
 

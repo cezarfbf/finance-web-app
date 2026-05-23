@@ -1,12 +1,10 @@
 import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { Briefcase, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
-import {
-  BUSINESS_NAME,
-  listBusinessReports,
-  listBusinessYears,
-} from "@/data/businessReports";
+import { fetchMonthlyReportSummaries } from "@/lib/api/reports";
+import { BUSINESS_NAME } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { MonthlyReport } from "@/types/report";
 
@@ -34,13 +32,30 @@ const MONTH_LABELS_PT = [
  * one tile per month that actually has data.
  */
 export function Business() {
-  const allReports = listBusinessReports();
-  const years = listBusinessYears();
-  const [year, setYear] = useState(years[0] ?? new Date().getFullYear());
+  const [year, setYear] = useState(2025);
+
+  const { data: reportSummaries = [], isLoading, isError } = useQuery({
+    queryKey: ['reports-monthly', year],
+    queryFn: () => fetchMonthlyReportSummaries(year),
+  });
+
+  const years = useMemo(() => {
+    const yearSet = new Set([2025]);
+    reportSummaries.forEach((r) => yearSet.add(r.year));
+    return Array.from(yearSet).sort((a, b) => b - a);
+  }, [reportSummaries]);
 
   const reports = useMemo(
-    () => allReports.filter((r) => r.year === year),
-    [allReports, year],
+    () => reportSummaries.map((summary) => ({
+      year: summary.year,
+      month: summary.month,
+      motorVersion: undefined,
+      totalProcessed: summary.totalProcessed,
+      unclassified: 0,
+      kpis: summary.kpis,
+      transactions: [],
+    } as MonthlyReport)).filter((r) => r.year === year),
+    [reportSummaries, year],
   );
 
   return (
@@ -80,11 +95,27 @@ export function Business() {
         </select>
       </div>
 
-      {reports.length === 0 ? (
+      {isError && (
+        <Card className="p-8 text-center text-sm text-[var(--kpi-custos)]">
+          Não foi possível carregar os relatórios. Tente novamente mais tarde.
+        </Card>
+      )}
+
+      {isLoading && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="h-32 animate-pulse bg-[var(--color-surface-2)]" />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && reports.length === 0 && !isError && (
         <Card className="p-8 text-center text-sm text-[var(--color-text-muted)]">
           No reports yet for {year}.
         </Card>
-      ) : (
+      )}
+
+      {!isLoading && reports.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {reports.map((report) => (
             <ReportCard key={`${report.year}-${report.month}`} report={report} />

@@ -14,6 +14,10 @@ const CORE_BASE_URL =
 const IDENTITY_BASE_URL =
   import.meta.env.VITE_IDENTITY_API_URL ?? "http://localhost:8081";
 
+const AUTH_TOKEN_KEY = "auth.token";
+const AUTH_EXPIRY_KEY = "auth.expiresIn";
+const LOGIN_PATH = "/login";
+
 function build(baseURL: string): AxiosInstance {
   const instance = axios.create({
     baseURL,
@@ -21,14 +25,32 @@ function build(baseURL: string): AxiosInstance {
     headers: { "Content-Type": "application/json" },
   });
 
-  // Auth interceptor — left as a hook for the future identity-service integration.
   instance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("auth.token");
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   });
+
+  instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      const status = error?.response?.status;
+      const url: string | undefined = error?.config?.url;
+      // Don't bounce the user off the login page if /auth/login itself 401s —
+      // that's the "wrong credentials" case and the form needs to render the error.
+      const isLoginCall = typeof url === "string" && url.includes("/auth/login");
+      if (status === 401 && !isLoginCall && typeof window !== "undefined") {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_EXPIRY_KEY);
+        if (window.location.pathname !== LOGIN_PATH) {
+          window.location.assign(LOGIN_PATH);
+        }
+      }
+      return Promise.reject(error);
+    },
+  );
 
   return instance;
 }

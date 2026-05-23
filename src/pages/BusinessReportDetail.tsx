@@ -1,12 +1,11 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { Badge } from "@/components/ui/Badge";
+import { fetchMonthlyReport } from "@/lib/api/reports";
+import { BUSINESS_NAME } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import {
-  BUSINESS_NAME,
-  findBusinessReport,
-} from "@/data/businessReports";
 
 const MONTH_LABELS_PT = [
   "Janeiro",
@@ -25,19 +24,24 @@ const MONTH_LABELS_PT = [
 
 /**
  * Detail view of a single monthly business report. Mirrors the layout of
- * the original `relatorio_contabil_<mes><ano>.html` files but reads from
- * the static dataset in `@/data/businessReports`.
+ * the original `relatorio_contabil_<mes><ano>.html` files and fetches from
+ * the finance-core-service API.
  */
 export function BusinessReportDetail() {
   const { year, month } = useParams<{ year: string; month: string }>();
   const y = Number(year);
   const m = Number(month);
 
+  const { data: report, isLoading, isError } = useQuery({
+    queryKey: ['report-detail', y, m],
+    queryFn: () => fetchMonthlyReport(y, m),
+    retry: false,
+    enabled: Number.isFinite(y) && Number.isFinite(m),
+  });
+
   if (!Number.isFinite(y) || !Number.isFinite(m)) {
     return <Navigate to="/business" replace />;
   }
-
-  const report = findBusinessReport(y, m);
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -59,7 +63,19 @@ export function BusinessReportDetail() {
           : ""}
       </p>
 
-      {!report && (
+      {isLoading && (
+        <Card className="mt-6 p-8 text-center text-sm text-[var(--color-text-muted)]">
+          A carregar…
+        </Card>
+      )}
+
+      {isError && (
+        <Card className="mt-6 p-8 text-center text-sm text-[var(--kpi-custos)]">
+          Não foi possível carregar o relatório.
+        </Card>
+      )}
+
+      {!isLoading && !report && !isError && (
         <Card className="mt-6 p-8 text-center text-sm text-[var(--color-text-muted)]">
           No data for {MONTH_LABELS_PT[m - 1]} {y}.
         </Card>
