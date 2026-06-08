@@ -1,20 +1,31 @@
-/**
- * Categories observed in the reference monthly report (relatorio_contabil_*.html).
- * Backend may return additional values — keep this open via `string` fallback in code.
- */
-export type TransactionCategory =
-  | "foodAndDrink"
-  | "taxAndSocialSecurity"
-  | "salaries"
-  | "fees"
-  | "utilities"
-  | "servicesAndSoftware"
-  | "furnitureAndOfficeSupplies"
-  | "other";
+export interface Category {
+  id: string;
+  name: string;
+  context: "PERSONAL" | "BUSINESS";
+  icon: string | null;
+  color: string | null;
+  code: string | null;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  context: "PERSONAL" | "BUSINESS";
+  date: string;
+  amount: number;
+  currency: string;
+  type: "DEBIT" | "CREDIT";
+  category: Category | null;
+  counterparty: string | null;
+  externalReference: string | null;
+  description: string | null;
+  notes: string | null;
+  source: "MANUAL" | "IMPORT" | "BANK_SYNC";
+}
 
 /**
- * Accounting classification used to roll up the monthly KPIs.
- * Mirrors the colored pills in the reference report.
+ * Accounting classification labels used in business monthly reports.
+ * Matches the KPI colour tokens defined in index.css.
  */
 export type Classification =
   | "Receita"
@@ -24,15 +35,3 @@ export type Classification =
   | "Retiradas"
   | "Gastos Pessoais"
   | "IGNORAR";
-
-export interface Transaction {
-  id: number | string;
-  date: string;          // ISO 8601
-  counterparty: string;  // "Contraparte"
-  reference: string;     // "Referência"
-  category: TransactionCategory | string;
-  amount: number;        // EUR; negative = debit
-  classification: Classification;
-  /** Free-text description from the legacy /transactions endpoint. Optional. */
-  description?: string;
-}

@@ -15,6 +15,13 @@ export function RequireAuth() {
       return;
     }
 
+    // DEV bypass: skip backend validation when VITE_SKIP_AUTH=true
+    if (import.meta.env.VITE_SKIP_AUTH === "true") {
+      setIsAuthed(true);
+      setIsLoading(false);
+      return;
+    }
+
     // Validate token with backend
     getCurrentUser()
       .then(() => setIsAuthed(true))

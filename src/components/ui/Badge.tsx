@@ -13,11 +13,12 @@ const classificationColor: Record<Classification, string> = {
 };
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  classification: Classification;
+  label: string;
 }
 
-export function Badge({ classification, className, ...props }: BadgeProps) {
-  const c = classificationColor[classification] ?? "var(--color-text-muted)";
+export function Badge({ label, className, ...props }: BadgeProps) {
+  const c =
+    classificationColor[label as Classification] ?? "var(--color-text-muted)";
   return (
     <span
       className={cn(
@@ -25,13 +26,12 @@ export function Badge({ classification, className, ...props }: BadgeProps) {
         className,
       )}
       style={{
-        // 0x22 ≈ 13% opacity, mirrors the report's #color22 background trick.
         background: `color-mix(in srgb, ${c} 13%, transparent)`,
         color: c,
       }}
       {...props}
     >
-      {classification}
+      {label}
     </span>
   );
 }

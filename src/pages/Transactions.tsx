@@ -4,10 +4,6 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-/**
- * Live view of GET /transactions on finance-core-service.
- * Shows the wired backend connection working end-to-end.
- */
 export function Transactions() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["transactions"],
@@ -37,9 +33,9 @@ export function Transactions() {
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Counterparty</th>
                 <th className="px-4 py-3 text-left">Reference</th>
-                <th className="px-4 py-3 text-left">Category</th>
+                <th className="px-4 py-3 text-left">Context</th>
                 <th className="px-4 py-3 text-right">Amount</th>
-                <th className="px-4 py-3 text-left">Classification</th>
+                <th className="px-4 py-3 text-left">Category</th>
               </tr>
             </thead>
             <tbody>
@@ -49,18 +45,22 @@ export function Transactions() {
                   className="border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/50"
                 >
                   <td className="px-4 py-3">{formatDate(tx.date)}</td>
-                  <td className="px-4 py-3">{tx.counterparty}</td>
+                  <td className="px-4 py-3">{tx.counterparty ?? "—"}</td>
                   <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                    {tx.reference}
+                    {tx.externalReference ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                    {tx.category}
+                    {tx.context}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums">
                     {formatCurrency(tx.amount)}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge classification={tx.classification} />
+                    {tx.category ? (
+                      <Badge label={tx.category.name} />
+                    ) : (
+                      <span className="text-[var(--color-text-muted)]">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

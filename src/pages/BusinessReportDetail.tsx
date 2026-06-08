@@ -2,7 +2,8 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { KpiCard } from "@/components/ui/KpiCard";
-import { Badge } from "@/components/ui/Badge";
+import { Badge, classificationColor } from "@/components/ui/Badge";
+import type { Classification } from "@/types/transaction";
 import { fetchMonthlyReport } from "@/lib/api/reports";
 import { BUSINESS_NAME } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -132,7 +133,6 @@ export function BusinessReportDetail() {
                   <th className="px-4 py-3 text-left">Data</th>
                   <th className="px-4 py-3 text-left">Contraparte</th>
                   <th className="px-4 py-3 text-left">Referência</th>
-                  <th className="px-4 py-3 text-left">Categoria</th>
                   <th className="px-4 py-3 text-right">Valor</th>
                   <th className="px-4 py-3 text-left">Classificação</th>
                 </tr>
@@ -146,36 +146,24 @@ export function BusinessReportDetail() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       {formatDate(tx.date)}
                     </td>
-                    <td className="px-4 py-3">{tx.counterparty}</td>
+                    <td className="px-4 py-3">{tx.counterparty ?? "—"}</td>
                     <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                      {tx.reference}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                      {tx.category}
+                      {tx.externalReference ?? "—"}
                     </td>
                     <td
                       className="px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap"
                       style={{
-                        color:
-                          tx.classification === "Receita"
-                            ? "var(--kpi-receita)"
-                            : tx.classification === "IVA Apurado"
-                              ? "var(--kpi-iva-apurado)"
-                              : tx.classification === "IVA Pago"
-                                ? "var(--kpi-iva-pago)"
-                                : tx.classification === "Custos Oper."
-                                  ? "var(--kpi-custos)"
-                                  : tx.classification === "Retiradas"
-                                    ? "var(--kpi-retiradas)"
-                                    : tx.classification === "Gastos Pessoais"
-                                      ? "var(--kpi-pessoais)"
-                                      : "var(--color-text-muted)",
+                        color: classificationColor[tx.category?.name as Classification] ?? "var(--color-text-muted)",
                       }}
                     >
                       {formatCurrency(tx.amount)}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge classification={tx.classification} />
+                      {tx.category ? (
+                        <Badge label={tx.category.name} />
+                      ) : (
+                        <span className="text-[var(--color-text-muted)]">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
