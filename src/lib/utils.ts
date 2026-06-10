@@ -27,3 +27,16 @@ export function formatDate(iso: string): string {
   const yyyy = d.getFullYear();
   return `${dd}-${mm}-${yyyy}`;
 }
+
+export function formatDayMonth(iso: string): string {
+  // Current year: "4 June" (day + full month, no year).
+  // Earlier years: "23 Dec 2025" (day + short month + year).
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const isCurrentYear = d.getFullYear() === new Date().getFullYear();
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: isCurrentYear ? "long" : "short",
+    ...(isCurrentYear ? {} : { year: "numeric" }),
+  }).format(d);
+}

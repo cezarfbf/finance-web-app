@@ -1,18 +1,63 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTransactions } from "@/lib/api/transactions";
+import { Search } from "lucide-react";
+import {
+  fetchTransactions,
+  searchTransactions,
+} from "@/lib/api/transactions";
+import {
+  DateFilter,
+  EMPTY_RANGE,
+  hasRange,
+  type DateRange,
+} from "@/components/transactions/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDayMonth } from "@/lib/utils";
 
 export function Transactions() {
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+
+  const query = debouncedSearch.trim();
+  const filtered = Boolean(query) || hasRange(range);
   const { data, isLoading, error } = useQuery({
-    queryKey: ["transactions"],
-    queryFn: fetchTransactions,
+    queryKey: ["transactions", "PERSONAL", query, range.from, range.to],
+    queryFn: () =>
+      filtered
+        ? searchTransactions({
+            context: "PERSONAL",
+            q: query || undefined,
+            from: range.from || undefined,
+            to: range.to || undefined,
+          })
+        : fetchTransactions("PERSONAL"),
   });
 
   return (
     <div className="mx-auto max-w-7xl">
       <h1 className="mb-6 text-2xl font-semibold">Transactions</h1>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <DateFilter value={range} onChange={setRange} />
+      </div>
+
+      <div className="mb-4 flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
+        <Search className="h-4 w-4 text-[var(--color-text-muted)]" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search transactions"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--color-text-muted)]"
+        />
+      </div>
 
       <Card className="overflow-hidden p-0">
         {isLoading && <Empty>Loading…</Empty>}
@@ -25,16 +70,21 @@ export function Transactions() {
             ?
           </Empty>
         )}
-        {data && data.length === 0 && <Empty>No transactions yet.</Empty>}
+        {data && data.length === 0 && (
+          <Empty>
+            {filtered
+              ? "No transactions match your filters."
+              : "No transactions yet."}
+          </Empty>
+        )}
         {data && data.length > 0 && (
           <table className="w-full text-sm">
             <thead className="bg-[var(--color-surface-2)] text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
               <tr>
                 <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Counterparty</th>
-                <th className="px-4 py-3 text-left">Reference</th>
-                <th className="px-4 py-3 text-left">Context</th>
+                <th className="px-4 py-3 text-left">Description</th>
                 <th className="px-4 py-3 text-right">Amount</th>
+                <th className="px-4 py-3 text-left">Type</th>
                 <th className="px-4 py-3 text-left">Category</th>
               </tr>
             </thead>
@@ -44,16 +94,27 @@ export function Transactions() {
                   key={tx.id}
                   className="border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/50"
                 >
-                  <td className="px-4 py-3">{formatDate(tx.date)}</td>
-                  <td className="px-4 py-3">{tx.counterparty ?? "—"}</td>
-                  <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                    {tx.externalReference ?? "—"}
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {formatDayMonth(tx.date)}
                   </td>
-                  <td className="px-4 py-3 text-[var(--color-text-muted)]">
-                    {tx.context}
+                  <td className="px-4 py-3">
+                    {tx.description ?? tx.counterparty ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums">
                     {formatCurrency(tx.amount)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className="text-xs font-medium uppercase tracking-wide"
+                      style={{
+                        color:
+                          tx.type === "CREDIT"
+                            ? "var(--kpi-receita)"
+                            : "var(--kpi-custos)",
+                      }}
+                    >
+                      {tx.type}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     {tx.category ? (
