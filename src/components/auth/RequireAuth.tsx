@@ -8,16 +8,16 @@ export function RequireAuth() {
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      navigate("/login", { replace: true });
+    // DEV bypass: skip auth entirely when VITE_SKIP_AUTH=true
+    if (import.meta.env.VITE_SKIP_AUTH === "true") {
+      setIsAuthed(true);
       setIsLoading(false);
       return;
     }
 
-    // DEV bypass: skip backend validation when VITE_SKIP_AUTH=true
-    if (import.meta.env.VITE_SKIP_AUTH === "true") {
-      setIsAuthed(true);
+    const token = getToken();
+    if (!token) {
+      navigate("/login", { replace: true });
       setIsLoading(false);
       return;
     }
