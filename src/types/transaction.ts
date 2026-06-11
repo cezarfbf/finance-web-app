@@ -23,6 +23,20 @@ export interface Transaction {
   source: "MANUAL" | "IMPORT" | "BANK_SYNC";
 }
 
+/** Create/update payload for a transaction. */
+export interface TransactionInput {
+  context: "PERSONAL" | "BUSINESS";
+  /** ISO yyyy-MM-dd. */
+  date: string;
+  amount: number;
+  type: "DEBIT" | "CREDIT";
+  categoryId?: string | null;
+  currency?: string;
+  description: string;
+  counterparty?: string | null;
+  notes?: string | null;
+}
+
 /**
  * Accounting classification labels used in business monthly reports.
  * Matches the KPI colour tokens defined in index.css.

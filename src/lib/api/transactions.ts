@@ -1,5 +1,5 @@
 import { coreApi } from "./client";
-import type { Transaction } from "@/types/transaction";
+import type { Transaction, TransactionInput } from "@/types/transaction";
 
 export async function fetchTransactions(
   context?: "PERSONAL" | "BUSINESS",
@@ -33,6 +33,25 @@ export async function searchTransactions(
     },
   });
   return data;
+}
+
+export async function createTransaction(
+  input: TransactionInput,
+): Promise<Transaction> {
+  const { data } = await coreApi.post<Transaction>("/transactions", input);
+  return data;
+}
+
+export async function updateTransaction(
+  id: string,
+  input: TransactionInput,
+): Promise<Transaction> {
+  const { data } = await coreApi.put<Transaction>(`/transactions/${id}`, input);
+  return data;
+}
+
+export async function deleteTransaction(id: string): Promise<void> {
+  await coreApi.delete(`/transactions/${id}`);
 }
 
 export async function fetchMonthlyTransactions(

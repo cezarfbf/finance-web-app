@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import {
   fetchTransactions,
   searchTransactions,
@@ -11,14 +11,20 @@ import {
   hasRange,
   type DateRange,
 } from "@/components/transactions/DateFilter";
+import { TransactionFormModal } from "@/components/transactions/TransactionFormModal";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDayMonth } from "@/lib/utils";
+import type { Transaction } from "@/types/transaction";
 
 export function Transactions() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [range, setRange] = useState<DateRange>(EMPTY_RANGE);
+  const [modal, setModal] = useState<{
+    mode: "create" | "edit";
+    tx?: Transaction;
+  } | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -42,7 +48,17 @@ export function Transactions() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <h1 className="mb-6 text-2xl font-semibold">Transactions</h1>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Transactions</h1>
+        <button
+          type="button"
+          onClick={() => setModal({ mode: "create" })}
+          className="flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          New transaction
+        </button>
+      </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <DateFilter value={range} onChange={setRange} />
@@ -92,7 +108,8 @@ export function Transactions() {
               {data.map((tx) => (
                 <tr
                   key={tx.id}
-                  className="border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/50"
+                  onClick={() => setModal({ mode: "edit", tx })}
+                  className="cursor-pointer border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/50"
                 >
                   <td className="px-4 py-3 whitespace-nowrap">
                     {formatDayMonth(tx.date)}
@@ -129,6 +146,13 @@ export function Transactions() {
           </table>
         )}
       </Card>
+
+      <TransactionFormModal
+        open={!!modal}
+        mode={modal?.mode ?? "create"}
+        transaction={modal?.tx}
+        onClose={() => setModal(null)}
+      />
     </div>
   );
 }
