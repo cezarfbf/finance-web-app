@@ -38,9 +38,14 @@ function build(baseURL: string): AxiosInstance {
     (error) => {
       const status = error?.response?.status;
       const url: string | undefined = error?.config?.url;
-      // Don't bounce the user off the login page if /auth/login itself 401s —
-      // that's the "wrong credentials" case and the form needs to render the error.
-      const isLoginCall = typeof url === "string" && url.includes("/auth/login");
+      // Don't bounce the user to /login when an auth call itself 401s —
+      // those pages (login form, sign-up, Google callback) need to render
+      // the error in place.
+      const isLoginCall =
+        typeof url === "string" &&
+        (url.includes("/auth/login") ||
+          url.includes("/auth/register") ||
+          url.includes("/oauth2/callback"));
       if (status === 401 && !isLoginCall && typeof window !== "undefined") {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_EXPIRY_KEY);
