@@ -7,11 +7,21 @@ import { Business } from "./pages/Business";
 import { BusinessReportDetail } from "./pages/BusinessReportDetail";
 import { Transactions } from "./pages/Transactions";
 import { Login } from "./pages/Login";
+import { SignUp } from "./pages/SignUp";
+import { GoogleCallback } from "./pages/GoogleCallback";
 
 export const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <SignUp />,
+  },
+  {
+    path: "/auth/google/callback",
+    element: <GoogleCallback />,
   },
   {
     element: <RequireAuth />,
