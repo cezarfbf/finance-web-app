@@ -7,6 +7,7 @@ import {
   Settings,
   Search,
   LogOut,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/api/auth";
@@ -28,8 +29,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-16 shrink-0 flex-col items-center justify-between border-r border-[var(--color-border)] bg-[var(--color-surface)] py-4">
       <div className="flex flex-col items-center gap-2">
-        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-surface-2)] text-[var(--color-accent)]">
-          <PieChart size={18} />
+        <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--color-accent)] text-[var(--color-bg)]">
+          <TrendingUp size={20} strokeWidth={2.4} />
         </div>
         <SidebarIconLink to="/search" label="Search" icon={Search} disabled />
         {navItems.map((item) => (
@@ -55,9 +56,9 @@ function LogoutButton() {
       type="button"
       title="Sign out"
       onClick={handleLogout}
-      className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
+      className="flex h-10 w-10 items-center justify-center rounded-[11px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
     >
-      <LogOut size={18} />
+      <LogOut size={19} />
     </button>
   );
 }
@@ -72,9 +73,9 @@ function SidebarIconLink({ to, label, icon: Icon, disabled }: SidebarIconLinkPro
       <button
         type="button"
         title={label}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] opacity-50 hover:bg-[var(--color-surface-2)]"
+        className="flex h-10 w-10 items-center justify-center rounded-[11px] text-[var(--color-text-muted)] opacity-50 hover:bg-[var(--color-surface-2)]"
       >
-        <Icon size={18} />
+        <Icon size={19} />
       </button>
     );
   }
@@ -84,13 +85,13 @@ function SidebarIconLink({ to, label, icon: Icon, disabled }: SidebarIconLinkPro
       title={label}
       className={({ isActive }) =>
         cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
+          "flex h-10 w-10 items-center justify-center rounded-[11px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
           isActive &&
             "bg-[var(--color-surface-2)] text-[var(--color-accent)]",
         )
       }
     >
-      <Icon size={18} />
+      <Icon size={19} />
     </NavLink>
   );
 }

@@ -42,7 +42,7 @@ export function FixedExpensesCard() {
   };
 
   return (
-    <div className="rounded-2xl bg-[var(--color-surface)] p-5">
+    <div className="rounded-[20px] border border-[var(--color-border-soft)] bg-[var(--color-surface)] p-6">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-[var(--color-text-muted)]">Fixed Expenses</p>

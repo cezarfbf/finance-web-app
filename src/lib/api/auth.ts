@@ -10,7 +10,11 @@ export interface LoginResponse {
 
 export interface CurrentUser {
   id: string;
+  name: string | null;
   email: string;
+  role?: string;
+  provider?: string;
+  createdAt?: string;
 }
 
 function storeSession(data: LoginResponse): void {
